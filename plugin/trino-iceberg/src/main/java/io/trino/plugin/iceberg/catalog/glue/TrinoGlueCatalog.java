@@ -530,6 +530,7 @@ public class TrinoGlueCatalog
                 throw new TableNotFoundException(source);
             }
 
+            viewCache.remove(source);
             TableInput viewTableInput = getViewTableInput(
                     target.getTableName(),
                     existingView.get().getViewOriginalText(),
@@ -571,6 +572,7 @@ public class TrinoGlueCatalog
         }
 
         try {
+            viewCache.remove(schemaViewName);
             deleteTable(schemaViewName.getSchemaName(), schemaViewName.getTableName());
         }
         catch (AmazonServiceException e) {
@@ -759,6 +761,7 @@ public class TrinoGlueCatalog
         if (!isTrinoMaterializedView(view.getTableType(), view.getParameters())) {
             throw new TrinoException(UNSUPPORTED_TABLE_TYPE, "Not a Materialized View: " + view.getDatabaseName() + "." + view.getName());
         }
+        materializedViewCache.remove(viewName);
         dropStorageTable(session, view);
         deleteTable(view.getDatabaseName(), view.getName());
     }
@@ -849,6 +852,7 @@ public class TrinoGlueCatalog
             if (table.isEmpty()) {
                 throw new TableNotFoundException(source);
             }
+            materializedViewCache.remove(source);
             com.amazonaws.services.glue.model.Table glueTable = table.get();
             if (!isTrinoMaterializedView(glueTable.getTableType(), glueTable.getParameters())) {
                 throw new TrinoException(UNSUPPORTED_TABLE_TYPE, "Not a Materialized View: " + source);
